@@ -1,0 +1,4 @@
+export default [
+  ['M17 4h-3V2h-4v2H7v4h10V4z'],
+  ['M7 8v14h10V8H7z'],
+];

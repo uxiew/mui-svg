@@ -1,0 +1,1 @@
+export default 'M20 4H4v16h16zm-2 14H6V6h12z';
