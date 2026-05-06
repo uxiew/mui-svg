@@ -1,0 +1,41 @@
+# dependencies (bun install)
+node_modules
+
+# build output
+out
+dist
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+*.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# dotenv
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# editor / IDE / agent
+.idea
+.vscode
+.cursor
+.claude
+CLAUDE.md
+
+# OS
+.DS_Store
+
+# scratch
+tmp-*

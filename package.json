@@ -1,0 +1,77 @@
+{
+  "name": "mui-svg",
+  "version": "9.0.0",
+  "description": "Material Design Icons 的纯数据版本：将 @mui/icons-material 中所有图标的 SVG path 数据导出为可摇树的 JS/TS 常量。",
+  "type": "module",
+  "license": "MIT",
+  "author": "ver5",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js",
+      "default": "./dist/types.js"
+    },
+    "./*": {
+      "types": "./dist/icons/*.d.ts",
+      "import": "./dist/icons/*.js",
+      "default": "./dist/icons/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "generate": "bun run scripts/generate.ts",
+    "clean": "rm -rf dist src/icons",
+    "build": "bun run clean && bun run generate && tsc -p tsconfig.build.json",
+    "playground": "bun run --hot playground/index.ts",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "icons",
+    "material-icons",
+    "material-design",
+    "mdi",
+    "svg",
+    "svg-path",
+    "mui",
+    "tree-shakable",
+    "data-only"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ver5/mui-svg.git"
+  },
+  "homepage": "https://github.com/ver5/mui-svg#readme",
+  "bugs": {
+    "url": "https://github.com/ver5/mui-svg/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "muiIconsMaterialVersion": "9.0.0",
+  "devDependencies": {
+    "@mui/icons-material": "^9.0.0",
+    "@types/bun": "latest",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.2.3",
+    "flexsearch": "^0.8.212",
+    "react": "^19.0.0",
+    "typescript": "^6.0.3"
+  }
+}
