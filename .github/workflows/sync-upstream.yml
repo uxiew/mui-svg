@@ -1,0 +1,114 @@
+name: Sync upstream & release
+
+on:
+  # 每两天 UTC 18:00 (北京时间次日 02:00) 触发一次
+  schedule:
+    - cron: "0 18 */2 * *"
+  # 也支持手动触发, 便于排错与 force release
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "强制重新生成并发版 (即使上游无更新)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write # 用于 push commit / tag
+  packages: write # 用于 npm provenance (可选)
+  id-token: write # OIDC, npm provenance
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Detect, generate, build, publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node (for npm publish)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Detect upstream version & decide bump
+        id: sync
+        run: bun run scripts/sync-upstream.ts
+
+      - name: Skip when nothing to do
+        if: steps.sync.outputs.changed != 'true' && github.event.inputs.force != 'true'
+        run: |
+          echo "上游无更新 (上游=${{ steps.sync.outputs.upstream_version }}, 已记录=${{ steps.sync.outputs.previous_upstream_version }})"
+          echo "若需强制重发, 使用 workflow_dispatch 并将 force=true."
+
+      - name: Install dependencies
+        if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        run: bun install --frozen-lockfile=false
+
+      - name: Sync MUI synonyms (for playground search parity)
+        if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        run: bun run scripts/sync-synonyms.ts
+
+      - name: Build (generate icons + tsc compile)
+        if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        run: bun run build
+
+      - name: Sanity check
+        if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        run: |
+          test -f dist/index.js
+          test -f dist/index.d.ts
+          ICON_COUNT=$(ls dist/icons/*.js | wc -l | tr -d ' ')
+          echo "图标数量: $ICON_COUNT"
+          if [ "$ICON_COUNT" -lt 5000 ]; then
+            echo "::error::图标产物数量异常 ($ICON_COUNT < 5000), 构建可能不完整"
+            exit 1
+          fi
+
+      - name: Commit & tag
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          NEW_VERSION="${{ steps.sync.outputs.next_version }}"
+          UP_VERSION="${{ steps.sync.outputs.upstream_version }}"
+          BUMP="${{ steps.sync.outputs.bump_kind }}"
+          git add package.json bun.lock playground/synonyms.json
+          git commit -m "chore(sync): @mui/icons-material -> ${UP_VERSION} (${BUMP} bump to v${NEW_VERSION})"
+          git tag "v${NEW_VERSION}"
+          git push origin HEAD --tags
+
+      - name: Publish to npm
+        if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance
+
+      - name: Create GitHub Release
+        if: steps.sync.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.sync.outputs.next_version }}
+          name: v${{ steps.sync.outputs.next_version }}
+          body: |
+            自动同步 [`@mui/icons-material@${{ steps.sync.outputs.upstream_version }}`](https://www.npmjs.com/package/@mui/icons-material/v/${{ steps.sync.outputs.upstream_version }})
+
+            - 上游版本: `${{ steps.sync.outputs.previous_upstream_version }}` → `${{ steps.sync.outputs.upstream_version }}`
+            - 本包版本: `${{ steps.sync.outputs.bump_kind }}` 凸点 → `v${{ steps.sync.outputs.next_version }}`
+          generate_release_notes: false
