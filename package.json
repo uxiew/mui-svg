@@ -1,7 +1,7 @@
 {
   "name": "mui-svg",
-  "version": "9.0.0",
-  "description": "Material Design Icons 的纯数据版本：将 @mui/icons-material 中所有图标的 SVG path 数据导出为可摇树的 JS/TS 常量。",
+  "version": "0.1.0",
+  "description": "将 @mui/icons-material 中所有图标的 SVG path 数据导出为可摇树的 JS/TS 常量。",
   "type": "module",
   "license": "MIT",
   "author": "ver5",
