@@ -61,7 +61,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
-        run: bun install --frozen-lockfile=false
+        run: bun install
 
       - name: Sync MUI synonyms (for playground search parity)
         if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
@@ -98,7 +98,7 @@ jobs:
         if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public --provenance
+        run: npm publish --access public
 
       - name: Create GitHub Release
         if: steps.sync.outputs.changed == 'true'
