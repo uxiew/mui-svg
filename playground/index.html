@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mui-svg Playground</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script>
+      // 在 React 渲染前先确定主题, 避免 FOUC.
+      // 优先级: localStorage > prefers-color-scheme > dark.
+      (function () {
+        try {
+          var k = 'mui-svg-playground-theme';
+          var saved = localStorage.getItem(k);
+          var theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark';
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          /* 隐私模式等场景下静默回退到默认 dark */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./app.tsx"></script>
+  </body>
+</html>
