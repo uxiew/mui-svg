@@ -1,0 +1,75 @@
+name: Deploy playground to Pages
+
+on:
+  # main 上 playground / 图标 / 构建脚本变更时部署
+  push:
+    branches: [main]
+    paths:
+      - 'playground/**'
+      - 'src/icons/**'
+      - 'src/types.ts'
+      - 'src/index.ts'
+      - 'scripts/build-playground.ts'
+      - '.github/workflows/deploy-playground.yml'
+  # 上游同步工作流跑完后, 自动重新部署 playground
+  workflow_run:
+    workflows: ['Sync upstream & release']
+    types: [completed]
+  # 手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write # Pages 部署需要 OIDC
+
+# 同一时刻只允许一份部署在运行, 进行中的不取消, 避免 Pages 状态错乱
+concurrency:
+  group: deploy-playground
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static playground
+    runs-on: ubuntu-latest
+    # workflow_run 触发时, 只有上游成功完成才继续
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build playground
+        env:
+          # GitHub Pages 子路径 (e.g. /mui-svg/), 由 configure-pages 推断;
+          # 用户域 (user.github.io) 时此值为空字符串, 默认回退为 './'.
+          PUBLIC_PATH: ${{ steps.pages.outputs.base_path && format('{0}/', steps.pages.outputs.base_path) || './' }}
+        run: bun run playground:build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./playground-dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
