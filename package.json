@@ -37,6 +37,7 @@
     "clean": "rm -rf dist src/icons",
     "build": "bun run clean && bun run generate && tsc -p tsconfig.build.json",
     "playground": "bun run --hot playground/index.ts",
+    "playground:build": "bun run scripts/build-playground.ts",
     "prepublishOnly": "bun run build"
   },
   "keywords": [
