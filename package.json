@@ -53,11 +53,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ver5/mui-svg.git"
+    "url": "git+https://github.com/uxiew/mui-svg.git"
   },
-  "homepage": "https://github.com/ver5/mui-svg#readme",
+  "homepage": "https://github.com/uxiew/mui-svg#readme",
   "bugs": {
-    "url": "https://github.com/ver5/mui-svg/issues"
+    "url": "https://github.com/uxiew/mui-svg/issues"
   },
   "engines": {
     "node": ">=18"
