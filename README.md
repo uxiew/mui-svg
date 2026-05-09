@@ -173,17 +173,37 @@ document.body.appendChild(svg);
 
 仓库内自带可视化 playground,可搜索全部 10750 个图标(参考 [MUI 官方 icons 搜索](https://mui.com/material-ui/material-icons/) 的体验):
 
+> 在线预览: **https://uxiew.github.io/mui-svg/** (由下方 GitHub Action 自动部署)
+
+本地启动:
+
 ```bash
 bun install
-bun run playground
-# → http://localhost:3000
+bun run playground          # 开发模式: http://localhost:3000
+bun run playground:build    # 静态构建到 ./playground-dist
 ```
 
 效果:
 - 顶部搜索框 + 五种风格 tab 切换 (Filled / Outlined / Rounded / Sharp / TwoTone)
+- 同义词全文搜索 (FlexSearch + MUI synonyms): 搜 `clip` 命中 ContentPaste、搜 `test` 命中 BugReport
+- 明暗主题切换,跟随 `prefers-color-scheme` 并 localStorage 持久化
 - 卡片网格全量展示,匹配数 + 当前展示数实时反馈
 - IntersectionObserver 分页加载 (每次 +200 个),支持万级数据流畅滚动
 - 选中后右侧展示数据、两种导入示例、渲染代码
+
+### 部署到 GitHub Pages
+
+仓库内置 `.github/workflows/deploy-playground.yml`,在以下时机自动部署 playground 到 GitHub Pages:
+
+- `main` 分支上 `playground/`、`src/icons/` 或构建脚本变更后 push
+- 上游同步工作流 (`Sync upstream & release`) 完成后 (新图标自动可视化)
+- 手动 `workflow_dispatch` 触发
+
+**首次启用步骤:**
+
+1. 仓库 **Settings → Pages → Build and deployment → Source** 选择 `GitHub Actions`
+2. 确认 **Settings → Actions → General → Workflow permissions** 至少 `Read and write`
+3. 触发一次 `Deploy playground to Pages` workflow,等待绿色后访问站点 URL
 
 ## 自动同步上游
 
@@ -200,10 +220,11 @@ bun run playground
 ## 本地构建
 
 ```bash
-bun install        # 安装依赖
-bun run generate   # 仅生成 src/icons/*.ts (10750 个文件)
-bun run build      # 清理 + 生成 + tsc 编译为 dist
-bun run playground # 启动可视化 playground
+bun install              # 安装依赖
+bun run generate         # 仅生成 src/icons/*.ts (10750 个文件)
+bun run build            # 清理 + 生成 + tsc 编译为 dist
+bun run playground       # 启动开发模式 playground
+bun run playground:build # 静态构建 playground 到 ./playground-dist
 ```
 
 ## 目录结构
@@ -211,15 +232,22 @@ bun run playground # 启动可视化 playground
 ```
 .
 ├── scripts/
-│   └── generate.ts        # 解析 @mui/icons-material 并生成 src/icons/*.ts
+│   ├── generate.ts          # 解析 @mui/icons-material 并生成 src/icons/*.ts
+│   ├── sync-synonyms.ts     # 从 mui repo 同步图标同义词字典
+│   ├── sync-upstream.ts     # 检测上游版本并按凸点类型升级本包
+│   └── build-playground.ts  # 把 playground 静态打包为 playground-dist/
 ├── src/
-│   ├── icons/             # 自动生成,共 10750+ 个图标
-│   ├── types.ts           # IconPath 类型定义
-│   └── index.ts           # 顶层入口
-├── playground/            # 可视化示例 (Bun.serve + React)
-├── dist/                  # tsc 构建产物 (.js + .d.ts)
-├── tsconfig.json          # 默认 (开发/Lint)
-├── tsconfig.build.json    # 构建专用
+│   ├── icons/               # 自动生成,共 10750+ 个图标
+│   ├── types.ts             # IconPath 类型定义
+│   └── index.ts             # 顶层入口
+├── playground/              # 可视化示例 (Bun.serve + React)
+├── .github/workflows/
+│   ├── sync-upstream.yml    # 每两天检测上游, 自动 build & publish
+│   └── deploy-playground.yml# 自动构建 playground 并部署到 GitHub Pages
+├── dist/                    # tsc 构建产物 (.js + .d.ts)
+├── playground-dist/         # 静态 playground 产物 (gitignored)
+├── tsconfig.json            # 默认 (开发/Lint)
+├── tsconfig.build.json      # 构建专用
 └── package.json
 ```
 
