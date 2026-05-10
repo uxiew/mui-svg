@@ -1,7 +1,7 @@
 {
   "name": "mui-svg",
   "version": "0.1.0",
-  "description": "将 @mui/icons-material 中所有图标的 SVG path 数据导出为可摇树的 JS/TS 常量。",
+  "description": "Pure data version of Material Design Icons which can be used in all framework applications.",
   "type": "module",
   "license": "MIT",
   "author": "ver5",
