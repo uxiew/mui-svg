@@ -3,7 +3,9 @@
 [![npm version](https://img.shields.io/npm/v/mui-svg.svg)](https://www.npmjs.com/package/mui-svg)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-> [`@mui/icons-material`](https://www.npmjs.com/package/@mui/icons-material) 的 **纯数据版**：把 10000+ 个 Material Design 图标的 SVG `path` 数据导出为 JS/TS 常量,完全脱离 React,体积可控、可摇树、可无运行时使用。
+The **pure data version** of [`@mui/icons-material`](https://www.npmjs.com/package/@mui/icons-material): It exports the SVG `path` data of over 10,000 Material Design icons as JS/TS constants, which can be used in all framework applications. It features controllable package size, tree-shakability, and runtime-free usability.
+
+[`@mui/icons-material`](https://www.npmjs.com/package/@mui/icons-material) 的 **纯数据版**：把 10000+ 个 Material Design 图标的 SVG `path` 数据导出为 JS/TS 常量,所有框架应用都可以使用，体积可控、可摇树、可无运行时使用。
 
 ## 为什么需要它
 
