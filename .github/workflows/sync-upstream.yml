@@ -3,7 +3,7 @@ name: Sync upstream & release
 on:
   # 每两天 UTC 18:00 (北京时间次日 02:00) 触发一次
   schedule:
-    - cron: "0 18 */2 * *"
+    - cron: "0 18 * * 0"
   # 也支持手动触发, 便于排错与 force release
   workflow_dispatch:
     inputs:
@@ -28,7 +28,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: true
@@ -39,9 +39,9 @@ jobs:
           bun-version: latest
 
       - name: Setup Node (for npm publish)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "24"
+          node-version: "25"
           registry-url: "https://registry.npmjs.org"
 
       - name: Configure Git
@@ -96,8 +96,6 @@ jobs:
 
       - name: Publish to npm
         if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
 
       - name: Create GitHub Release
