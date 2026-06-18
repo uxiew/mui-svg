@@ -19,7 +19,7 @@ permissions:
 
 concurrency:
   group: sync-upstream
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   sync:
@@ -85,14 +85,41 @@ jobs:
 
       - name: Commit & tag
         if: steps.sync.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -eo pipefail
+
           NEW_VERSION="${{ steps.sync.outputs.next_version }}"
           UP_VERSION="${{ steps.sync.outputs.upstream_version }}"
           BUMP="${{ steps.sync.outputs.bump_kind }}"
+
           git add package.json bun.lock playground/synonyms.json
-          git commit -m "chore(sync): @mui/icons-material -> ${UP_VERSION} (${BUMP} bump to v${NEW_VERSION})"
-          git tag "v${NEW_VERSION}"
-          git push origin HEAD --tags
+
+          # 如果没有任何变更则跳过 commit（避免失败）
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(sync): @mui/icons-material -> ${UP_VERSION} (${BUMP} bump to v${NEW_VERSION})"
+          fi
+
+          # 强制更新/覆盖 tag（本身 tag 推送通常不会造成非快进问题）
+          git tag -f "v${NEW_VERSION}"
+
+          # 识别当前分支（兼容 refs/heads/* 情况）
+          if [ -n "${GITHUB_REF}" ]; then
+            BRANCH="${GITHUB_REF#refs/heads/}"
+          else
+            BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          fi
+          echo "Current branch: ${BRANCH}"
+
+          # 同步远端并 rebase 到远端最新提交，发现冲突时中断以便人工介入
+          git fetch origin "${BRANCH}"
+          git rebase "origin/${BRANCH}"
+
+          # 推送分支与 tag；使用 --force-with-lease 更安全，避免无意识覆盖远端新提交
+          git push origin HEAD --tags --force-with-lease
 
       - name: Publish to npm
         if: steps.sync.outputs.changed == 'true' || github.event.inputs.force == 'true'
