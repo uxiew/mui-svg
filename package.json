@@ -1,6 +1,6 @@
 {
   "name": "mui-svg",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Pure data version of Material Design Icons which can be used in all framework applications.",
   "type": "module",
   "license": "MIT",
@@ -65,9 +65,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "muiIconsMaterialVersion": "9.0.1",
+  "muiIconsMaterialVersion": "9.1.1",
   "devDependencies": {
-    "@mui/icons-material": "^9.0.0",
+    "@mui/icons-material": "^9.1.1",
     "@types/bun": "latest",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.2.3",
